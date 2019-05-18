@@ -1,0 +1,6 @@
+commands:
+  - name: devcf
+    api: api.run.pivotal.io
+    org: myorg
+    space: myspace
+    login-options: "-u autopp@example.com"
