@@ -48,3 +48,19 @@ func TestLoginAlias(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
 }
+
+func TestCfAlias(t *testing.T) {
+	c := &Command{
+		Name:         "mycommand",
+		API:          "api.run.pivotal.io",
+		Org:          "myorg",
+		Space:        "myspace",
+		LoginOptions: "--sso",
+	}
+
+	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
+	expected := fmt.Sprintf(`mycommand="CF_HOME=%s cf"`, cfHome)
+	actual, err := c.CfAlias()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}

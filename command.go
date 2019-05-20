@@ -32,3 +32,12 @@ func (c *Command) LoginAlias() (string, error) {
 
 	return fmt.Sprintf(`login-%s="CF_HOME=%s cf login -a %s -o %s -s %s %s"`, c.Name, cfHome, c.API, c.Org, c.Space, c.LoginOptions), nil
 }
+
+func (c *Command) CfAlias() (string, error) {
+	cfHome, err := c.CfHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(`%s="CF_HOME=%s cf"`, c.Name, cfHome), nil
+}
