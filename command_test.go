@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -29,5 +30,21 @@ func TestCfHomeDir(t *testing.T) {
 	expected := filepath.Join(homeDir, ".fcfc", "mycommand")
 	actual, err := c.CfHomeDir()
 	assert.NoError(t, err)
-	assert.Equal(t, actual, expected)
+	assert.Equal(t, expected, actual)
+}
+
+func TestLoginAlias(t *testing.T) {
+	c := &Command{
+		Name:         "mycommand",
+		API:          "api.run.pivotal.io",
+		Org:          "myorg",
+		Space:        "myspace",
+		LoginOptions: "--sso",
+	}
+
+	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
+	expected := fmt.Sprintf(`login-mycommand="CF_HOME=%s cf login -a api.run.pivotal.io -o myorg -s myspace --sso"`, cfHome)
+	actual, err := c.LoginAlias()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
 }
