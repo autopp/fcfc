@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
@@ -25,7 +25,7 @@ func run() int {
 		return 1
 	}
 
-	b, err := ioutil.ReadFile(path.Join(home, ".fcfc.yml"))
+	b, err := ioutil.ReadFile(filepath.Join(home, ".fcfc.yml"))
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
