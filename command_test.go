@@ -43,7 +43,7 @@ func TestLoginAlias(t *testing.T) {
 	}
 
 	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
-	expected := fmt.Sprintf(`login-mycommand="CF_HOME=%s cf login -a api.run.pivotal.io -o myorg -s myspace --sso"`, cfHome)
+	expected := fmt.Sprintf(`alias login-mycommand="CF_HOME=%s cf login -a api.run.pivotal.io -o myorg -s myspace --sso"`, cfHome)
 	actual, err := c.LoginAlias()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
@@ -59,7 +59,7 @@ func TestCfAlias(t *testing.T) {
 	}
 
 	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
-	expected := fmt.Sprintf(`mycommand="CF_HOME=%s cf"`, cfHome)
+	expected := fmt.Sprintf(`alias mycommand="CF_HOME=%s cf"`, cfHome)
 	actual, err := c.CfAlias()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
