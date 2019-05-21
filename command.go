@@ -24,6 +24,15 @@ func (c *Command) CfHomeDir() (string, error) {
 	return filepath.Join(home, ".fcfc", c.Name), nil
 }
 
+func (c *Command) MakeCfHome() (string, error) {
+	cfHome, err := c.CfHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(`mkdir -p "%s"`, cfHome), nil
+}
+
 func (c *Command) LoginAlias() (string, error) {
 	cfHome, err := c.CfHomeDir()
 	if err != nil {

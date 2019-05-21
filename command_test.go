@@ -33,6 +33,22 @@ func TestCfHomeDir(t *testing.T) {
 	assert.Equal(t, expected, actual)
 }
 
+func TestMakeCfHome(t *testing.T) {
+	c := &Command{
+		Name:         "mycommand",
+		API:          "api.run.pivotal.io",
+		Org:          "myorg",
+		Space:        "myspace",
+		LoginOptions: "--sso",
+	}
+
+	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
+	expected := fmt.Sprintf(`mkdir -p "%s"`, cfHome)
+	actual, err := c.MakeCfHome()
+	assert.NoError(t, err)
+	assert.Equal(t, expected, actual)
+}
+
 func TestLoginAlias(t *testing.T) {
 	c := &Command{
 		Name:         "mycommand",

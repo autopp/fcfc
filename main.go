@@ -46,6 +46,13 @@ fi
 `
 	fmt.Printf(guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
 	for _, c := range cfg.Commands {
+		makeCfHome, err := c.MakeCfHome()
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			return 1
+		}
+		fmt.Println(makeCfHome)
+
 		loginAlias, err := c.LoginAlias()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
