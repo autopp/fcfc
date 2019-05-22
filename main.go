@@ -10,6 +10,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+const Version = "v0.1.0"
+
 type Config struct {
 	Commands []Command
 }
