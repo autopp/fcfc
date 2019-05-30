@@ -18,7 +18,7 @@ TARGET_DIR=$(RELEASE_DIR)/$(PRODUCT)_$(GOOS)_$(GOARCH)
 EXEFILE=$(TARGET_DIR)/$(PRODUCT)$(SUFFIX)
 ARTIFACT=$(ARTIFACT_DIR)/$(PRODUCT)_$(GOOS)_$(GOARCH).zip
 
-TARGETS=windows-amd64 windows-386 linux-amd64 linux-arm linux-arm64 linux-386 darwin-amd64 darwin-386
+TARGETS=linux-amd64 linux-arm linux-arm64 linux-386 darwin-amd64 darwin-386
 BUILD_TARGETS=$(addprefix build-,$(TARGETS))
 ARTIFACT_TARGETS=$(addprefix artifact-,$(TARGETS))
 
