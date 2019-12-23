@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -14,7 +13,7 @@ var homeDir string
 
 func TestMain(m *testing.M) {
 	var err error
-	homeDir, err = homedir.Dir()
+	homeDir, err = os.UserHomeDir()
 	if err != nil {
 		panic(err)
 	}

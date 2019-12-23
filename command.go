@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/mitchellh/go-homedir"
+	"os"
 )
 
 type Command struct {
@@ -32,7 +32,7 @@ type Command struct {
 }
 
 func (c *Command) CfHomeDir() (string, error) {
-	home, err := homedir.Dir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
