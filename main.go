@@ -42,7 +42,14 @@ func run() int {
 		return 1
 	}
 
-	b, err := ioutil.ReadFile(filepath.Join(home, ".fcfc.yml"))
+	var configPath string
+	if len(os.Args) > 0 {
+		configPath = os.Args[1]
+	} else {
+		configPath = filepath.Join(home, ".fcfc.yml")
+	}
+
+	b, err := ioutil.ReadFile(configPath)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
