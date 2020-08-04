@@ -43,7 +43,7 @@ func run() int {
 	}
 
 	var configPath string
-	if len(os.Args) > 0 {
+	if len(os.Args) > 1 {
 		configPath = os.Args[1]
 	} else {
 		configPath = filepath.Join(home, ".fcfc.yml")
