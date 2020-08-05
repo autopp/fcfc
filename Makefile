@@ -26,7 +26,7 @@ run:
 .PHONY: build
 build: $(EXEFILE)
 
-$(EXEFILE): $(wildcard $(PWD)/cmd/hello/*)
+$(EXEFILE): $(wildcard $(PWD)/*.go) go.mod go.sum
 	go build -o $@ -ldflags="-s -w -X main.version=$(VERSION)" .
 
 .PHONY: release
