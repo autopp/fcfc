@@ -1,54 +1,40 @@
 THIS_GOVERSION=$(shell go version)
-THIS_GOOS=$(word 1,$(subst /, ,$(lastword $(THIS_GOVERSION))))
-THIS_GOARCH=$(word 2,$(subst /, ,$(lastword $(THIS_GOVERSION))))
-GOOS=$(THIS_GOOS)
-GOARCH=$(THIS_GOARCH)
+GOOS=$(word 1,$(subst /, ,$(lastword $(THIS_GOVERSION))))
+GOARCH=$(word 2,$(subst /, ,$(lastword $(THIS_GOVERSION))))
+VERSION=$(shell git rev-parse --short HEAD)
 ifeq ($(GOOS),windows)
-SUFFIX=.exe
+EXT=.exe
 else
-SUFFIX=
+EXT=
 endif
 
 PRODUCT=fcfc
-VERSION=$(patsubst "%",%,$(lastword $(shell grep 'const Version' main.go)))
+BUILD_DIR=$(CURDIR)/build
+TARGET_DIR_NAME=$(PRODUCT)-$(GOOS)-$(GOARCH)
+TARGET_DIR=$(BUILD_DIR)/$(TARGET_DIR_NAME)
+EXEFILE=$(TARGET_DIR)/$(PRODUCT)$(EXT)
+ARTIFACT=$(TARGET_DIR).zip
 
-RELEASE_DIR=$(CURDIR)/releases
-ARTIFACT_DIR=$(RELEASE_DIR)/artifacts
-TARGET_DIR=$(RELEASE_DIR)/$(PRODUCT)_$(GOOS)_$(GOARCH)
-EXEFILE=$(TARGET_DIR)/$(PRODUCT)$(SUFFIX)
-ARTIFACT=$(ARTIFACT_DIR)/$(PRODUCT)_$(GOOS)_$(GOARCH).zip
+.PHONY: test
+test:
+	go test ./...
 
-TARGETS=linux-amd64 linux-arm linux-arm64 linux-386 darwin-amd64 darwin-386
-BUILD_TARGETS=$(addprefix build-,$(TARGETS))
-ARTIFACT_TARGETS=$(addprefix artifact-,$(TARGETS))
+.PHONY: run
+run:
+	go run . $(ARGS)
 
-.PHONY: build all artifact artifacts release clean
-
+.PHONY: build
 build: $(EXEFILE)
 
-$(EXEFILE):
-	go build -o $@ .
+$(EXEFILE): $(wildcard $(PWD)/cmd/hello/*)
+	go build -o $@ -ldflags="-s -w -X main.version=$(VERSION)" .
 
-build-%:
-	$(MAKE) build GOOS=$(word 2,$(subst -, ,$@)) GOARCH=$(word 3,$(subst -, ,$@))
+.PHONY: release
+release: $(ARTIFACT)
 
-all: $(BUILD_TARGETS)
+$(ARTIFACT): build
+	cd $(BUILD_DIR) && zip $@ $(TARGET_DIR_NAME)/*
 
-$(ARTIFACT_DIR):
-	mkdir -p $@
-
-artifact: $(ARTIFACT)
-
-$(ARTIFACT): $(EXEFILE) $(ARTIFACT_DIR)
-	cd $(RELEASE_DIR) && zip $@ $(PRODUCT)_$(GOOS)_$(GOARCH)/*
-
-artifact-%:
-	$(MAKE) artifact GOOS=$(word 2,$(subst -, ,$@)) GOARCH=$(word 3,$(subst -, ,$@))
-
-artifacts: $(ARTIFACT_TARGETS)
-
-release: artifacts
-	ghr "$(VERSION)" $(ARTIFACT_DIR)
-
+.PHONY: clean
 clean:
-	rm -fR $(RELEASE_DIR)
+	rm -fR $(BUILD_DIR)
