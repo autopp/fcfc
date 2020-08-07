@@ -17,6 +17,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -58,6 +59,8 @@ func run() int {
 	var cfg Config
 	yaml.Unmarshal(b, &cfg)
 
+	out := new(bytes.Buffer)
+
 	fcfcDir := filepath.Join(home, ".fcfc")
 	guardTmpl := `if [ ! -d "%s" ]; then
   if [ -e "%s" ]; then
@@ -68,30 +71,32 @@ func run() int {
 fi
 
 `
-	fmt.Printf(guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
+	fmt.Fprintf(out, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
 	for _, c := range cfg.Commands {
 		makeCfHome, err := c.MakeCfHome()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Println(makeCfHome)
+		fmt.Fprintln(out, makeCfHome)
 
 		loginAlias, err := c.LoginAlias()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Println(loginAlias)
+		fmt.Fprintln(out, loginAlias)
 
 		cfAlias, err := c.CfAlias()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Println(cfAlias)
-		fmt.Println()
+		fmt.Fprintln(out, cfAlias)
+		fmt.Fprintln(out)
 	}
+
+	fmt.Print(out.String())
 
 	return 0
 }
