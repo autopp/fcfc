@@ -93,7 +93,6 @@ fi
 			return 1
 		}
 		fmt.Fprintln(out, cfAlias)
-		fmt.Fprintln(out)
 	}
 
 	fmt.Print(out.String())
