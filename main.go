@@ -62,14 +62,10 @@ func run() int {
 	out := new(bytes.Buffer)
 
 	fcfcDir := filepath.Join(home, ".fcfc")
-	guardTmpl := `if [ ! -d "%s" ]; then
-  if [ -e "%s" ]; then
-    echo %s is already exists and is not directory >&2
-  else
-    mkdir -p "%s"
-  fi
-fi
-
+	guardTmpl := `if [ ! -d "%s" -a -e "%s" ]; then
+  echo %s is already exists and is not directory >&2
+else
+  mkdir -p "%s"
 `
 	fmt.Fprintf(out, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
 	for _, c := range cfg.Commands {
@@ -78,22 +74,23 @@ fi
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Fprintln(out, makeCfHome)
+		fmt.Fprintln(out, "\n  "+makeCfHome)
 
 		loginAlias, err := c.LoginAlias()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Fprintln(out, loginAlias)
+		fmt.Fprintln(out, "  "+loginAlias)
 
 		cfAlias, err := c.CfAlias()
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			return 1
 		}
-		fmt.Fprintln(out, cfAlias)
+		fmt.Fprintln(out, "  "+cfAlias)
 	}
+	fmt.Fprintln(out, "fi")
 
 	fmt.Print(out.String())
 
