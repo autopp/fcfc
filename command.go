@@ -46,7 +46,7 @@ func (c *Command) MakeCfHome() (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(`mkdir -p "%s"`, cfHome), nil
+	return fmt.Sprintf(`\mkdir -p "%s"`, cfHome), nil
 }
 
 func (c *Command) LoginAlias() (string, error) {

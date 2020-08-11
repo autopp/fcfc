@@ -42,7 +42,7 @@ func TestMakeCfHome(t *testing.T) {
 	}
 
 	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
-	expected := fmt.Sprintf(`mkdir -p "%s"`, cfHome)
+	expected := fmt.Sprintf(`\mkdir -p "%s"`, cfHome)
 	actual, err := c.MakeCfHome()
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)

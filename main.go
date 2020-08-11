@@ -63,9 +63,9 @@ func run() int {
 
 	fcfcDir := filepath.Join(home, ".fcfc")
 	guardTmpl := `if [ ! -d "%s" -a -e "%s" ]; then
-  echo %s is already exists and is not directory >&2
+  \echo %s is already exists and is not directory >&2
 else
-  mkdir -p "%s"
+  \mkdir -p "%s"
 `
 	fmt.Fprintf(out, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
 	for _, c := range cfg.Commands {
