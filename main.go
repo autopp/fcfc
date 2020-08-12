@@ -26,7 +26,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const version = "v0.1.0"
+const version = "HEAD"
 
 type Config struct {
 	Commands []Command
@@ -45,6 +45,10 @@ func run() int {
 
 	var configPath string
 	if len(os.Args) > 1 {
+		if os.Args[1] == "-v" || os.Args[1] == "--version" {
+			fmt.Printf("%s %s\n", os.Args[0], version)
+			return 0
+		}
 		configPath = os.Args[1]
 	} else {
 		configPath = filepath.Join(home, ".fcfc.yml")
