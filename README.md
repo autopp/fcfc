@@ -26,8 +26,13 @@ commands:
 ```
 
 And evaluate output of `fcfc` in `.bashrc`/`.zshrc`.
-```
+```sh
 eval "$(fcfc)"
+```
+
+You can also place settings into other path. If you do, please pass it as a parameter.
+```sh
+eval "$(fcfc /path/to/.fcfc.yml)"
 ```
 
 Now, you can use `login-devcf`/`login-othercf` to login your target and `devcf`/`othercf` to execute command in specified target.
