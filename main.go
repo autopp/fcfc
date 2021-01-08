@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,66 +38,83 @@ func main() {
 }
 
 func run() int {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return 1
-	}
+	cmd := &cobra.Command{
+		Use:  "fcfc [-v] [-s shell] [config]",
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if showVersion, err := cmd.Flags().GetBool("version"); err != nil {
+				return err
+			} else if showVersion {
+				fmt.Printf("%s %s\n", cmd.Name(), version)
+				return nil
+			}
 
-	var configPath string
-	if len(os.Args) > 1 {
-		if os.Args[1] == "-v" || os.Args[1] == "--version" {
-			fmt.Printf("%s %s\n", os.Args[0], version)
-			return 0
-		}
-		configPath = os.Args[1]
-	} else {
-		configPath = filepath.Join(home, ".fcfc.yml")
-	}
+			_, err := cmd.Flags().GetString("shell")
+			if err != nil {
+				return err
+			}
 
-	b, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return 1
-	}
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
 
-	var cfg Config
-	yaml.Unmarshal(b, &cfg)
+			var configPath string
+			if len(args) != 0 {
+				configPath = args[0]
+			} else {
+				configPath = filepath.Join(home, ".fcfc.yml")
+			}
 
-	out := new(bytes.Buffer)
+			b, err := ioutil.ReadFile(configPath)
+			if err != nil {
+				return err
+			}
 
-	fcfcDir := filepath.Join(home, ".fcfc")
-	guardTmpl := `if [ ! -d "%s" -a -e "%s" ]; then
+			var cfg Config
+			yaml.Unmarshal(b, &cfg)
+
+			out := new(bytes.Buffer)
+
+			fcfcDir := filepath.Join(home, ".fcfc")
+			guardTmpl := `if [ ! -d "%s" -a -e "%s" ]; then
   \echo %s is already exists and is not directory >&2
 else
   \mkdir -p "%s"
 `
-	fmt.Fprintf(out, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
-	for _, c := range cfg.Commands {
-		makeCfHome, err := c.MakeCfHome()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
-		fmt.Fprintln(out, "\n  "+makeCfHome)
+			fmt.Fprintf(out, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
+			for _, c := range cfg.Commands {
+				makeCfHome, err := c.MakeCfHome()
+				if err != nil {
+					return err
+				}
+				fmt.Fprintln(out, "\n  "+makeCfHome)
 
-		loginAlias, err := c.LoginAlias()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
-		fmt.Fprintln(out, "  "+loginAlias)
+				loginAlias, err := c.LoginAlias()
+				if err != nil {
+					return err
+				}
+				fmt.Fprintln(out, "  "+loginAlias)
 
-		cfAlias, err := c.CfAlias()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
-		fmt.Fprintln(out, "  "+cfAlias)
+				cfAlias, err := c.CfAlias()
+				if err != nil {
+					return err
+				}
+				fmt.Fprintln(out, "  "+cfAlias)
+			}
+			fmt.Fprintln(out, "fi")
+
+			fmt.Print(out.String())
+			return nil
+		},
 	}
-	fmt.Fprintln(out, "fi")
+	cmd.Flags().BoolP("version", "v", false, "print version and exit")
+	cmd.Flags().StringP("shell", "s", "bash", "shell type. supported: bash (default), zsh, fish")
 
-	fmt.Print(out.String())
+	if err := cmd.Execute(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		return 1
+	}
 
 	return 0
 }
