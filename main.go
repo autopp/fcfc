@@ -17,7 +17,6 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -38,6 +37,8 @@ func main() {
 }
 
 func run() int {
+	generators := map[string]Generator{"bash": new(BashGenerator), "zsh": new(BashGenerator)}
+
 	cmd := &cobra.Command{
 		Use:  "fcfc [-v] [-s shell] [config]",
 		Args: cobra.MaximumNArgs(1),
@@ -49,9 +50,14 @@ func run() int {
 				return nil
 			}
 
-			_, err := cmd.Flags().GetString("shell")
+			shell, err := cmd.Flags().GetString("shell")
 			if err != nil {
 				return err
+			}
+
+			g, ok := generators[shell]
+			if !ok {
+				return fmt.Errorf("not supported shell %q", shell)
 			}
 
 			home, err := os.UserHomeDir()
@@ -74,37 +80,34 @@ func run() int {
 			var cfg Config
 			yaml.Unmarshal(b, &cfg)
 
-			out := new(bytes.Buffer)
-
 			fcfcDir := filepath.Join(home, ".fcfc")
-			guardTmpl := `if [ ! -d "%s" -a -e "%s" ]; then
-  \echo %s is already exists and is not directory >&2
-else
-  \mkdir -p "%s"
-`
-			fmt.Fprintf(out, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
+			lines := make([]string, 0, len(cfg.Commands)*3)
 			for _, c := range cfg.Commands {
-				makeCfHome, err := c.MakeCfHome()
+				makeCfHome, err := g.MakeCfHome(&c)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(out, "\n  "+makeCfHome)
+				lines = append(lines, makeCfHome)
 
-				loginAlias, err := c.LoginAlias()
+				loginAlias, err := g.LoginAlias(&c)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(out, "  "+loginAlias)
+				lines = append(lines, loginAlias)
 
-				cfAlias, err := c.CfAlias()
+				cfAlias, err := g.CfAlias(&c)
 				if err != nil {
 					return err
 				}
-				fmt.Fprintln(out, "  "+cfAlias)
+				lines = append(lines, cfAlias)
 			}
-			fmt.Fprintln(out, "fi")
 
-			fmt.Print(out.String())
+			out, err := g.WithCheckingFcfcDir(fcfcDir, lines)
+			if err != nil {
+				return err
+			}
+			fmt.Print(out)
+
 			return nil
 		},
 	}
