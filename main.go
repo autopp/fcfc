@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2019-2020 Akira Tanimura
+	Copyright (C) 2019-2021 Akira Tanimura
 
 		Licensed under the Apache License, Version 2.0 (the "License");
 		you may not use this file except in compliance with the License.
