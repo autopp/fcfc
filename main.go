@@ -37,7 +37,11 @@ func main() {
 }
 
 func run() int {
-	generators := map[string]Generator{"bash": new(BashGenerator), "zsh": new(BashGenerator)}
+	generators := map[string]Generator{
+		"bash": new(BashGenerator),
+		"zsh":  new(BashGenerator),
+		"fish": new(FishGenerator),
+	}
 
 	cmd := &cobra.Command{
 		Use:  "fcfc [-v] [-s shell] [config]",

@@ -12,8 +12,7 @@ type Generator interface {
 	WithCheckingFcfcDir(fcfcDir string, lines []string) (string, error)
 }
 
-type BashGenerator struct {
-}
+type BashGenerator struct{}
 
 func (*BashGenerator) MakeCfHome(c *Command) (string, error) {
 	cfHome, err := c.CfHomeDir()
@@ -55,6 +54,52 @@ else
 		fmt.Fprintln(buf, "  "+line)
 	}
 	fmt.Fprintln(buf, "fi")
+
+	return buf.String(), nil
+}
+
+type FishGenerator struct{}
+
+func (*FishGenerator) MakeCfHome(c *Command) (string, error) {
+	cfHome, err := c.CfHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(`command mkdir -p "%s"`, cfHome), nil
+}
+
+func (*FishGenerator) LoginAlias(c *Command) (string, error) {
+	cfHome, err := c.CfHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(`alias login-%s="CF_HOME=%s cf login -a %s -o %s -s %s %s"`, c.Name, cfHome, c.API, c.Org, c.Space, c.LoginOptions), nil
+}
+
+func (*FishGenerator) CfAlias(c *Command) (string, error) {
+	cfHome, err := c.CfHomeDir()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf(`alias %s="CF_HOME=%s cf"`, c.Name, cfHome), nil
+}
+
+func (*FishGenerator) WithCheckingFcfcDir(fcfcDir string, lines []string) (string, error) {
+	buf := new(strings.Builder)
+	guardTmpl := `if test ! -d "%s" -a -e "%s"
+  command echo %s is already exists and is not directory >&2
+else
+  command mkdir -p "%s"
+
+`
+	fmt.Fprintf(buf, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
+	for _, line := range lines {
+		fmt.Fprintln(buf, "  "+line)
+	}
+	fmt.Fprintln(buf, "end")
 
 	return buf.String(), nil
 }
