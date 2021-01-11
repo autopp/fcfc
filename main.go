@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2019-2020 Akira Tanimura
+	Copyright (C) 2019-2021 Akira Tanimura
 
 		Licensed under the Apache License, Version 2.0 (the "License");
 		you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,66 +37,91 @@ func main() {
 }
 
 func run() int {
-	home, err := os.UserHomeDir()
-	if err != nil {
+	generators := map[string]Generator{
+		"bash": new(BashGenerator),
+		"zsh":  new(BashGenerator),
+		"fish": new(FishGenerator),
+	}
+
+	cmd := &cobra.Command{
+		Use:  "fcfc [-v] [-s shell] [config]",
+		Args: cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if showVersion, err := cmd.Flags().GetBool("version"); err != nil {
+				return err
+			} else if showVersion {
+				fmt.Printf("%s %s\n", cmd.Name(), version)
+				return nil
+			}
+
+			shell, err := cmd.Flags().GetString("shell")
+			if err != nil {
+				return err
+			}
+
+			g, ok := generators[shell]
+			if !ok {
+				return fmt.Errorf("not supported shell %q", shell)
+			}
+
+			home, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
+
+			var configPath string
+			if len(args) != 0 {
+				configPath = args[0]
+			} else {
+				configPath = filepath.Join(home, ".fcfc.yml")
+			}
+
+			b, err := ioutil.ReadFile(configPath)
+			if err != nil {
+				return err
+			}
+
+			var cfg Config
+			yaml.Unmarshal(b, &cfg)
+
+			fcfcDir := filepath.Join(home, ".fcfc")
+			lines := make([]string, 0, len(cfg.Commands)*3)
+			for _, c := range cfg.Commands {
+				makeCfHome, err := g.MakeCfHome(&c)
+				if err != nil {
+					return err
+				}
+				lines = append(lines, makeCfHome)
+
+				loginAlias, err := g.LoginAlias(&c)
+				if err != nil {
+					return err
+				}
+				lines = append(lines, loginAlias)
+
+				cfAlias, err := g.CfAlias(&c)
+				if err != nil {
+					return err
+				}
+				lines = append(lines, cfAlias)
+			}
+
+			out, err := g.WithCheckingFcfcDir(fcfcDir, lines)
+			if err != nil {
+				return err
+			}
+			fmt.Print(out)
+
+			return nil
+		},
+	}
+	cmd.Flags().BoolP("version", "v", false, "print version and exit")
+	cmd.Flags().StringP("shell", "s", "bash", "shell type. supported: bash (default), zsh, fish")
+
+	if err := cmd.Execute(); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		return 1
 	}
-
-	var configPath string
-	if len(os.Args) > 1 {
-		if os.Args[1] == "-v" || os.Args[1] == "--version" {
-			fmt.Printf("%s %s\n", os.Args[0], version)
-			return 0
-		}
-		configPath = os.Args[1]
-	} else {
-		configPath = filepath.Join(home, ".fcfc.yml")
-	}
-
-	b, err := ioutil.ReadFile(configPath)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		return 1
-	}
-
-	var cfg Config
-	yaml.Unmarshal(b, &cfg)
-
-	out := new(bytes.Buffer)
-
-	fcfcDir := filepath.Join(home, ".fcfc")
-	guardTmpl := `if [ ! -d "%s" -a -e "%s" ]; then
-  \echo %s is already exists and is not directory >&2
-else
-  \mkdir -p "%s"
-`
-	fmt.Fprintf(out, guardTmpl, fcfcDir, fcfcDir, fcfcDir, fcfcDir)
-	for _, c := range cfg.Commands {
-		makeCfHome, err := c.MakeCfHome()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
-		fmt.Fprintln(out, "\n  "+makeCfHome)
-
-		loginAlias, err := c.LoginAlias()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
-		fmt.Fprintln(out, "  "+loginAlias)
-
-		cfAlias, err := c.CfAlias()
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			return 1
-		}
-		fmt.Fprintln(out, "  "+cfAlias)
-	}
-	fmt.Fprintln(out, "fi")
-
-	fmt.Print(out.String())
 
 	return 0
 }

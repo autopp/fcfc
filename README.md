@@ -30,6 +30,11 @@ And evaluate output of `fcfc` in `.bashrc`/`.zshrc`.
 eval "$(fcfc)"
 ```
 
+If you use fish, you should set `-s fish` and evaluate in `config.fish`.
+```sh
+eval (fcfc -s fish | source)
+```
+
 You can also place settings into other path. If you do, please pass it as a parameter.
 ```sh
 eval "$(fcfc /path/to/.fcfc.yml)"

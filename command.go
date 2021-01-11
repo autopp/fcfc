@@ -1,5 +1,5 @@
 /*
-	Copyright (C) 2019-2020 Akira Tanimura
+	Copyright (C) 2019-2021 Akira Tanimura
 
 		Licensed under the Apache License, Version 2.0 (the "License");
 		you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package main
 
 import (
-	"fmt"
 	"path/filepath"
 
 	"os"
@@ -38,31 +37,4 @@ func (c *Command) CfHomeDir() (string, error) {
 	}
 
 	return filepath.Join(home, ".fcfc", c.Name), nil
-}
-
-func (c *Command) MakeCfHome() (string, error) {
-	cfHome, err := c.CfHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf(`\mkdir -p "%s"`, cfHome), nil
-}
-
-func (c *Command) LoginAlias() (string, error) {
-	cfHome, err := c.CfHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf(`alias login-%s="CF_HOME=%s cf login -a %s -o %s -s %s %s"`, c.Name, cfHome, c.API, c.Org, c.Space, c.LoginOptions), nil
-}
-
-func (c *Command) CfAlias() (string, error) {
-	cfHome, err := c.CfHomeDir()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf(`alias %s="CF_HOME=%s cf"`, c.Name, cfHome), nil
 }
