@@ -26,7 +26,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-const version = "HEAD"
+var version = "HEAD"
 
 type Config struct {
 	Commands []Command
