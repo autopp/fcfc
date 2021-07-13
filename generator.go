@@ -54,7 +54,7 @@ func (*BashGenerator) CfAlias(c *Command) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(`alias %s="CF_HOME=%s cf"`, c.Name, cfHome), nil
+	return fmt.Sprintf(`alias %s="CF_HOME=%s CF_PLUGIN_HOME=~ cf"`, c.Name, cfHome), nil
 }
 
 func (*BashGenerator) WithCheckingFcfcDir(fcfcDir string, lines []string) (string, error) {
@@ -100,7 +100,7 @@ func (*FishGenerator) CfAlias(c *Command) (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf(`alias %s="CF_HOME=%s cf"`, c.Name, cfHome), nil
+	return fmt.Sprintf(`alias %s="CF_HOME=%s CF_PLUGIN_HOME=~ cf"`, c.Name, cfHome), nil
 }
 
 func (*FishGenerator) WithCheckingFcfcDir(fcfcDir string, lines []string) (string, error) {
