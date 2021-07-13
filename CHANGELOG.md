@@ -1,5 +1,9 @@
 # Change log
 
+# v0.4.0
+
+- Set `CF_PLUGIN_HOME` to home directory in aliased `cf` command
+
 ## v0.3.0
 
 - Add `--shell`/`-s` option
