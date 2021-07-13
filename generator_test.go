@@ -40,7 +40,7 @@ func TestBashGeneratorCfAlias(t *testing.T) {
 	g := new(BashGenerator)
 
 	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
-	expected := fmt.Sprintf(`alias mycommand="CF_HOME=%s cf"`, cfHome)
+	expected := fmt.Sprintf(`alias mycommand="CF_HOME=%s CF_PLUGIN_HOME=~ cf"`, cfHome)
 	actual, err := g.CfAlias(c)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
@@ -92,7 +92,7 @@ func TestFishGeneratorCfAlias(t *testing.T) {
 	g := new(FishGenerator)
 
 	cfHome := filepath.Join(homeDir, ".fcfc", "mycommand")
-	expected := fmt.Sprintf(`alias mycommand="CF_HOME=%s cf"`, cfHome)
+	expected := fmt.Sprintf(`alias mycommand="CF_HOME=%s CF_PLUGIN_HOME=~ cf"`, cfHome)
 	actual, err := g.CfAlias(c)
 	assert.NoError(t, err)
 	assert.Equal(t, expected, actual)
