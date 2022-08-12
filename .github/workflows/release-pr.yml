@@ -44,6 +44,7 @@ jobs:
         VERSION=${GITHUB_HEAD_REF#release/}
         make release GOOS=windows GOARCH=amd64 VERSION="${VERSION}"
         make release GOOS=darwin GOARCH=amd64 VERSION="${VERSION}"
+        make release GOOS=linux GOARCH=arm64 VERSION="${VERSION}"
         make release GOOS=linux GOARCH=amd64 VERSION="${VERSION}"
     - name: Edit release
       run: |
